@@ -52,7 +52,8 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         mouse_event event = read_hmouse(mouse);
         // Determines if the event is valid
         if (event.type == MOUSE_REL ||
-            event.type == MOUSE_BTN) {
+            event.type == MOUSE_BTN ||
+            event.type == MOUSE_REFRESH) {
             // Converts the event into a network message
             const char * message = mouse_event_serialize(event);
             // It is possible that new clients are being added. In this case,

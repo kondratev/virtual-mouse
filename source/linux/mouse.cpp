@@ -59,6 +59,7 @@ std::string get_vmouse_path() {
 mouse_event input_event_to_mouse_event(const input_event & input) {
     mouse_event mouse;
     // Converts supported mouse event types
+    if (input.type == EV_SYN) mouse.type = MOUSE_REFRESH;
     if (input.type == EV_REL) mouse.type = MOUSE_REL;
     if (input.type == EV_KEY) mouse.type = MOUSE_BTN;
     // Converts supported mouse axis
@@ -72,7 +73,8 @@ mouse_event input_event_to_mouse_event(const input_event & input) {
         if (input.code == BTN_RIGHT) mouse.code = MOUSE_BTN_R;
         if (input.code == BTN_MIDDLE) mouse.code = MOUSE_BTN_M;
     }
-    if (mouse.type == MOUSE_REL ||
+    if (mouse.type == MOUSE_REFRESH ||
+        mouse.type == MOUSE_REL ||
         mouse.type == MOUSE_BTN) {
         // Converts the value
         mouse.value = input.value;
@@ -85,6 +87,7 @@ mouse_event input_event_to_mouse_event(const input_event & input) {
 input_event mouse_event_to_input_event(const mouse_event & mouse) {
     input_event input;
     // Converts supported mouse event types
+    if (mouse.type == MOUSE_REFRESH) input.type = EV_SYN;
     if (mouse.type == MOUSE_REL) input.type = EV_REL;
     if (mouse.type == MOUSE_BTN) input.type = EV_KEY;
     // Converts supported mouse axis

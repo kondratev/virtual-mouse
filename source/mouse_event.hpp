@@ -6,7 +6,7 @@
 // events, sent across the network, and translated back
 // into OS-specific events.
 
-#define MOUSE_NONE 0x0 // none
+#define MOUSE_REFRESH 0x0 // refresh
 #define MOUSE_REL 0x1 // axis
 #define MOUSE_BTN 0x2 // button
 
@@ -17,6 +17,8 @@
 #define MOUSE_BTN_L 0x1 // left button
 #define MOUSE_BTN_R 0x2 // right button
 #define MOUSE_BTN_M 0x3 // middle button
+
+#define MOUSE_NONE 0xFF
 
 #define MOUSE_EVENT_SLEN (sizeof(mouse_event) + strlen("mouse") + 1)
 
@@ -30,7 +32,6 @@ struct mouse_event {
 };
 
 mouse_event new_mouse_event(unsigned char type, unsigned char code, long value);
-
 const char * mouse_event_serialize(const mouse_event & event);
 mouse_event mouse_event_deserialize(const char * buffer);
 
