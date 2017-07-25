@@ -50,7 +50,8 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         std::cout << (int)event.type << " " << (int)event.code << " " << event.value << std::endl;
         // Determines if the event is valid
         if (event.type == MOUSE_EV_REL ||
-            event.type == MOUSE_EV_BTN) {
+            event.type == MOUSE_EV_BTN ||
+            event.type == MOUSE_EV_SYN) {
             std::vector<uint8_t> data = event.serialize();
             std::lock_guard<std::mutex> lock (clients_mu);
             for (auto & client : clients) {

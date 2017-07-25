@@ -40,7 +40,13 @@ void udev_input_event::operator=(const mouse_event & event) {
         else if (event.code == MOUSE_BTN_M) this->code = BTN_MIDDLE;
         // Converts the event type
         this->type = EV_KEY;
+
+    // Determines if this is a "synchronization" event
+    } else if (event.type == MOUSE_EV_SYN) {
+        // Converts the event type
+        this->type = EV_SYN;
     }
+    
     // Converts the event value
     this->value = event.value;
 }

@@ -18,7 +18,7 @@ void mouse_event::operator=(const udev_input_event & event) {
         else if (event.code ==  REL_WHEEL) this->code = MOUSE_REL_VWHEEL;
         // Converts the event type
         this->type = MOUSE_EV_REL;
-
+    
     // Determines if this is a "button" event
     } else if (event.type == EV_KEY) {
         // Converts the event code
@@ -27,7 +27,13 @@ void mouse_event::operator=(const udev_input_event & event) {
         else if (event.code == BTN_MIDDLE) this->code = MOUSE_BTN_M;
         // Converts the event type
         this->type = MOUSE_EV_BTN;
+    
+    // Determines if this is a "synchronize" event
+    } else if (event.type == EV_SYN) {
+        // Converts th event type
+        this->type = MOUSE_EV_SYN;
     }
+
     // Converts the event value
     this->value = event.value;
 }
@@ -62,8 +68,11 @@ std::vector<uint8_t> mouse_event::serialize() {
 void mouse_event::deserialize(const std::vector<uint8_t> & buffer) {
     const uint8_t* b = &buffer[0];
     { // Reads the identifier
-    if (*b++ != 'm' || *b++ != 'o' || *b++ != 'u' || *b++ != 's' || *b++ != 'e')
-        throw std::runtime_error("mouse_event::deserialize(): not mouse event");
+    if (*b++ != 'm' ||
+        *b++ != 'o' ||
+        *b++ != 'u' ||
+        *b++ != 's' ||
+        *b++ != 'e') throw std::runtime_error("mouse_event::deserialize(): not mouse event");
     }
     { // Reads the type
     uint8_t* p = (uint8_t*)&this->type;

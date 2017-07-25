@@ -3,6 +3,7 @@
 
 #define MOUSE_EV_REL 1
 #define MOUSE_EV_BTN 2
+#define MOUSE_EV_SYN 3
 
 #define MOUSE_REL_X 1
 #define MOUSE_REL_Y 2
