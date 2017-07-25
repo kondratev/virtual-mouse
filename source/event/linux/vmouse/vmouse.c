@@ -2,7 +2,6 @@
 #include <linux/input.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include "../mouse_definitions.h"
 
 static struct input_dev *vmouse_dev;
 static int vmouse_dev_registered;
@@ -12,11 +11,11 @@ static int __init vmouse_dev_init(void) {
         printk("error: (vmouse_dev = input_allocate_device()) == NULL\n");
         return 0;
     }
-    vmouse_dev->name = MOUSE_NAME;
+    vmouse_dev->name = "BNP Virtual Mouse";
     vmouse_dev->id.bustype = BUS_VIRTUAL;   // virtual bus
-    vmouse_dev->id.vendor  = MOUSE_VENDOR;  // [xxxx:0000]
-    vmouse_dev->id.product = MOUSE_PRODUCT; // [0000:xxxx]
-    vmouse_dev->id.version = MOUSE_VERSION; // ?
+    vmouse_dev->id.vendor  = 0x0000; // [xxxx:0000]
+    vmouse_dev->id.product = 0x0000; // [0000:xxxx]
+    vmouse_dev->id.version = 0x0001; // ?
     vmouse_dev->evbit[0] =
         BIT_MASK(EV_KEY) | // buttons (i.e left, right, middle)
         BIT_MASK(EV_REL);  // relative axis (i.e, x, y, scrollwheel)
@@ -46,5 +45,6 @@ static void __exit vmouse_dev_exit(void) {
         input_unregister_device(vmouse_dev);
     }
 }
+
 module_init(vmouse_dev_init);
 module_exit(vmouse_dev_exit);

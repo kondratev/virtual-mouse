@@ -57,7 +57,6 @@ int main (void) {
     while (true) {
         mouse_event event = mouse_event::recv(master_socket);
         udev_input_event input { event };
-        std::cout << (int)event.type << " " << (int)event.code << " " << event.value << std::endl;
         input.write(mouse);
     }
 }
