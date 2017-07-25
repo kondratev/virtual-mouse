@@ -37,6 +37,8 @@ void recv_client(int master_socket, std::vector<struct sockaddr> & clients) {
                 // In this case, we will wait until all updates have been sent.
                 std::lock_guard<std::mutex> lock (clients_mu);
                 clients.push_back(caddress);
+
+                std::cout << "HERE" << std::endl;
             }
         }
     }
