@@ -17,6 +17,7 @@ struct udev_input_event;
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 struct mouse_event {
     uint16_t type { 0 };
     uint16_t code { 0 };
@@ -28,8 +29,8 @@ struct mouse_event {
     #ifdef __unix__
     mouse_event(const udev_input_event&);
     void operator=(const udev_input_event&);
-    std::string serialize();
-    void deserialize(const std::string &);
+    std::vector<uint8_t> serialize();
+    void deserialize(const std::vector<uint8_t>&);
     static mouse_event read(int);
     #endif // __unix__
 };

@@ -33,49 +33,55 @@ void mouse_event::operator=(const udev_input_event & event) {
 }
 
 
-std::string mouse_event::serialize() {
-    std::string buffer;
-    // Writes the identifier
-    buffer += 'm';
-    buffer += 'o';
-    buffer += 'u';
-    buffer += 's';
-    buffer += 'e';
-    // Writes the type
-    buffer += this->type;
-    // Writes the code
-    buffer += this->code;
-    // Writes the value
-    char * p = ((char*)&this->value);
-    buffer += *p++;
-    buffer += *p++;
-    buffer += *p++;
-    buffer += *p++;
+std::vector<uint8_t> mouse_event::serialize() {
+    std::vector<uint8_t> buffer = {
+        'm', 'o', 'u', 's', 'e'
+    };
+    { // Writes the type
+    uint8_t* p = (uint8_t*)&this->type;
+    buffer.push_back(*p++);
+    buffer.push_back(*p++);
+    }
+    { // Writes the code
+    uint8_t* p = (uint8_t*)&this->code;
+    buffer.push_back(*p++);
+    buffer.push_back(*p++);
+    }
+    { // Writes the value
+    uint8_t* p = (uint8_t*)&this->value;
+    buffer.push_back(*p++);
+    buffer.push_back(*p++);
+    buffer.push_back(*p++);
+    buffer.push_back(*p++);
+    }
     // Returns the buffer
     return buffer;
 }
 
 #include <stdexcept>
-void mouse_event::deserialize(const std::string & buffer) {
-    auto c = buffer.begin();
-    // Reads the identifier
-    if (*c++ != 'm' ||
-        *c++ != 'o' ||
-        *c++ != 'u' ||
-        *c++ != 's' ||
-        *c++ != 'e') {
+void mouse_event::deserialize(const std::vector<uint8_t> & buffer) {
+    const uint8_t* b = &buffer[0];
+    { // Reads the identifier
+    if (*b++ != 'm' || *b++ != 'o' || *b++ != 'u' || *b++ != 's' || *b++ != 'e')
         throw std::runtime_error("mouse_event::deserialize(): not mouse event");
     }
-    // Reads the type
-    this->type = *c++;
-    // Reads the code
-    this->code = *c++;
-    // Reads the value
-    char * p = ((char*)&this->value);
-    *p++ = *c++;
-    *p++ = *c++;
-    *p++ = *c++;
-    *p++ = *c++;
+    { // Reads the type
+    uint8_t* p = (uint8_t*)&this->type;
+    *p++ = *b++;
+    *p++ = *b++;
+    }
+    { // Reads the code
+    uint8_t* p = (uint8_t*)&this->code;
+    *p++ = *b++;
+    *p++ = *b++;
+    }
+    { // Reads the value
+    uint8_t* p = (uint8_t*)&this->value;
+    *p++ = *b++;
+    *p++ = *b++;
+    *p++ = *b++;
+    *p++ = *b++;
+    }
 }
 
 #include <unistd.h>
@@ -96,11 +102,11 @@ mouse_event mouse_event::read(int mouse) {
 #include <sys/socket.h>
 #include <stdexcept>
 mouse_event mouse_event::recv(int socket) {
-    char buffer [1024] = { 0 };
+    std::vector<uint8_t> buffer (1024, 0);
     // This expects serialized mouse_events. In this case, we need a temporary
     // buffer. This buffer is passed to mouse_event::deserialize. This should
     // intialize the mouse_event.
-    if (::recv(socket, buffer, 1024, 0) == -1) {
+    if (::recv(socket, &buffer[0], 1024, 0) == -1) {
         throw std::runtime_error("recv(): " + std::to_string(errno));
     }
     // Deserialize the mouse event
