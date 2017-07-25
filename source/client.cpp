@@ -63,9 +63,6 @@ int main (void) {
             }
             mouse_event event = mouse_event_deserialize(message);
             input_event input = mouse_event_to_input_event(event);
-	    std::cout << (int)event.type << std::endl;
-	    std::cout << (int)event.code << std::endl;
-	    std::cout << event.value << std::endl;
             write(vmouse, &input, sizeof(input_event));
         }
     }

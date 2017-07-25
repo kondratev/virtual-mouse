@@ -62,26 +62,17 @@ mouse_event input_event_to_mouse_event(const input_event & input) {
     if (input.type == EV_SYN) mouse.type = MOUSE_REFRESH;
     else if (input.type == EV_REL) mouse.type = MOUSE_REL;
     else if (input.type == EV_KEY) mouse.type = MOUSE_BTN;
-    else {
-        mouse.type = input.type;
-        mouse.code = input.code;
-        mouse.value = input.value;
-    }
     // Converts supported mouse axis
     if (mouse.type == MOUSE_REL) {
         if (input.code == REL_X) mouse.code = MOUSE_REL_X;
-        if (input.code == REL_Y) mouse.code = MOUSE_REL_Y;
-        if (input.code == REL_WHEEL) mouse.code = MOUSE_REL_VWHEEL;
+        else if (input.code == REL_Y) mouse.code = MOUSE_REL_Y;
+        else if (input.code == REL_WHEEL) mouse.code = MOUSE_REL_VWHEEL;
+        mouse.value = input.value;
     // Converts supported mosue buttons
     } else if (mouse.type == MOUSE_BTN) {
         if (input.code == BTN_LEFT) mouse.code = MOUSE_BTN_L;
-        if (input.code == BTN_RIGHT) mouse.code = MOUSE_BTN_R;
-        if (input.code == BTN_MIDDLE) mouse.code = MOUSE_BTN_M;
-    }
-    if (mouse.type == MOUSE_REFRESH ||
-        mouse.type == MOUSE_REL ||
-        mouse.type == MOUSE_BTN) {
-        // Converts the value
+        else if (input.code == BTN_RIGHT) mouse.code = MOUSE_BTN_R;
+        else if (input.code == BTN_MIDDLE) mouse.code = MOUSE_BTN_M;
         mouse.value = input.value;
     }
     // Returns mouse event
@@ -95,24 +86,19 @@ input_event mouse_event_to_input_event(const mouse_event & mouse) {
     if (mouse.type == MOUSE_REFRESH) input.type = EV_SYN;
     else if (mouse.type == MOUSE_REL) input.type = EV_REL;
     else if (mouse.type == MOUSE_BTN) input.type = EV_KEY;
-    else {
-        input.type = mouse.type;
-        input.code = mouse.code;
-        input.value = input.value;
-    }
     // Converts supported mouse axis
     if (input.type == EV_REL) {
         if (mouse.code == MOUSE_REL_X) input.code = REL_X;
-        if (mouse.code == MOUSE_REL_Y) input.code = REL_Y;
-        if (mouse.code == MOUSE_REL_VWHEEL) input.code = REL_WHEEL;
+        else if (mouse.code == MOUSE_REL_Y) input.code = REL_Y;
+        else if (mouse.code == MOUSE_REL_VWHEEL) input.code = REL_WHEEL;
+        input.value = mouse.value;
     // Converts supported mouse buttons
     } else if (input.type == EV_KEY) {
         if (mouse.code == MOUSE_BTN_L) input.code = BTN_LEFT;
-        if (mouse.code == MOUSE_BTN_R) input.code = BTN_RIGHT;
-        if (mouse.code == MOUSE_BTN_M) input.code = BTN_MIDDLE;
+        else if (mouse.code == MOUSE_BTN_R) input.code = BTN_RIGHT;
+        else if (mouse.code == MOUSE_BTN_M) input.code = BTN_MIDDLE;
+        input.value = mouse.value;
     }
-    // Converts the value
-    input.value = mouse.value;
     // Returns input event
     return input;
 }
