@@ -61,9 +61,14 @@ int main (void) {
             if (recv(master_socket, &message, MOUSE_EVENT_SLEN, 0) == -1) {
                 throw std::runtime_error("recv(): " + std::to_string(errno));
             }
-            mouse_event event = mouse_event_deserialize(message);
+	    
+	    mouse_event event = mouse_event_deserialize(message);
             input_event input = mouse_event_to_input_event(event);
-            write(vmouse, &input, sizeof(input_event));
+	    std::cout << input.type << std::endl;
+	    std::cout << input.code << std::endl;
+	    std::cout << input.value << std::endl;
+	    std::cout << std::endl;
+	    write(vmouse, &input, sizeof(input_event));
         }
     }
 }
