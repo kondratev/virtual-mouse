@@ -10,11 +10,10 @@
 #include <thread>
 #include <mutex>
 // Includes
-#include "linux/mouse.hpp"
+#include "event/mouse_event.hpp"
+#include "event/linux/udev_input_event.hpp"
 
-// Determines if the program is running
 bool running;
-// Protects the client vector
 std::mutex clients_mu;
 
 void recv_client(int master_socket, std::vector<struct sockaddr> & clients) {
@@ -33,7 +32,6 @@ void recv_client(int master_socket, std::vector<struct sockaddr> & clients) {
         // Recieves a message from the client
         if (recvfrom(master_socket, &message, 1024, 0, &caddress, &caddress_len) != -1) {
             if (!strcmp(message, "connect")) {
-                std::cout << "HERE" << std::endl;
                 // It is possible that updates are being sent to the clients.
                 // In this case, we will wait until all updates have been sent.
                 std::lock_guard<std::mutex> lock (clients_mu);
@@ -48,32 +46,16 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         // Retrieves a mouse event. This is "blocking;" meaning that this
         // thread will stall until an event is recieved. This prevents the
         // thread from hogging cpu cycles.
-        input_event event = read_hmouse(mouse);
-
-        // // Determines if the event is valid
-        // if (event.type == MOUSE_REL ||
-        //     event.type == MOUSE_BTN ||
-        //     event.type == MOUSE_REF) {
-
-
-
-            // It is possible that new clients are being added. In this case,
-            // we will wait until all new clients are added.
+        mouse_event event = mouse_event::read(mouse);
+        // Determines if the event is valid
+        if (event.type == MOUSE_EV_REL ||
+            event.type == MOUSE_EV_BTN) {
+            std::string message = event.serialize();
             std::lock_guard<std::mutex> lock (clients_mu);
             for (auto & client : clients) {
-                // Sends the network message
-                sendto(master_socket, &event, sizeof(input_event), 0, &client, sizeof(client));
+                sendto(master_socket, message.c_str(), message.size(), 0, &client, sizeof(client));
             }
-
-
-	    std::cout <<
-            event.time.tv_usec << " " <<
-	        (int)event.type << " " <<
-	        (int)event.code << " " <<
-	        event.value <<
-            std::endl <<
-            std::endl;
-	    //}
+        }
     }
 }
 
@@ -83,7 +65,7 @@ int main (void) {
     const char * address = "192.168.1.10";
     const char * mouse_node = "/dev/input/event0";
 
-    int hmouse;
+    int mouse;
     int master_socket;
     struct sockaddr_in address4;
     struct sockaddr_in6 address6;
@@ -93,10 +75,9 @@ int main (void) {
 
     // Determines if we can open the mouse node. If this fails, we probably
     // don't have permission to open the mouse node.
-    if ((hmouse = open(mouse_node, O_RDONLY)) == -1) {
+    if ((mouse = open(mouse_node, O_RDONLY)) == -1) {
         throw std::runtime_error("open(): " + std::to_string(errno));
     }
-
     // Determines if we can create a master socket. This should succeed on 99%
     // of machines. Either AF_INET (ip protocol 4) or AF_INET6 (ip protocol 6)
     // supports SOCK_DGRAM.
@@ -122,21 +103,19 @@ int main (void) {
     // if either the address or port is invalid.
     if (family == AF_INET) {
         // Determines if the socket could bind
-        if (bind(master_socket, (struct sockaddr*)&address4, address4_len) == -1) {
+        if (bind(master_socket, (struct sockaddr*)&address4, address4_len) == -1)
             throw std::runtime_error("bind(): " + std::to_string(errno));
-        }
     } else if (family == AF_INET6) {
         // Determines if the socket could bind
-        if (bind(master_socket, (struct sockaddr*)&address6, address6_len) == -1) {
+        if (bind(master_socket, (struct sockaddr*)&address6, address6_len) == -1)
             throw std::runtime_error("bind(): " + std::to_string(errno));
-        }
     }
 
     // Starts the program
     running = true;
     // Starts processing clients and mouse updates
     std::thread t0 { recv_client, master_socket, std::ref(clients) };
-    std::thread t1 { send_mouse, master_socket, hmouse, std::ref(clients) };
+    std::thread t1 { send_mouse, master_socket, mouse, std::ref(clients) };
     // Prevents the program from terminating
     std::cin.get();
     // Stops the program

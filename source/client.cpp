@@ -8,26 +8,25 @@
 #include <iostream>
 #include <stdexcept>
 // Includes
-#include "mouse_event.hpp"
-#include "linux/mouse.hpp"
+#include "event/mouse_event.hpp"
+#include "event/linux/udev_input_event.hpp"
+#include "event/linux/vmouse.hpp"
 
 int main (void) {
     int port = 20000;
     int family = AF_INET;
     const char * address = "192.168.1.10";
 
-    int vmouse;
+    int mouse;
     int master_socket;
     struct sockaddr_in address4;
     struct sockaddr_in6 address6;
     socklen_t address4_len;
     socklen_t address6_len;
 
-    std::cout << get_vmouse_path() << std::endl;
-
     // Determines if we can open the mouse node. If this fails, we probably
     // don't have permission to open the mouse node.
-    if ((vmouse = open(get_vmouse_path().c_str(), O_WRONLY)) == -1) {
+    if ((mouse = open(get_vmouse_path().c_str(), O_WRONLY)) == -1) {
         throw std::runtime_error("open(): " + std::to_string(errno));
     }
 
@@ -55,25 +54,15 @@ int main (void) {
     const char * connect = "connect";
     sendto(master_socket, connect, strlen(connect), 0, (struct sockaddr*)&address4, address4_len);
 
-    char message [MOUSE_EVENT_SLEN];
     while (true) {
         if (family == AF_INET) {
-            input_event input;
-            if (recv(master_socket, &input, sizeof(input_event), 0) == -1) {
-                throw std::runtime_error("recv(): " + std::to_string(errno));
-            }
+ 
+            mouse_event event = mouse_event::recv(master_socket);
 	    
-	    // //mouse_event event = mouse_event_deserialize(message);
-        //     input_event input = mouse_event_to_input_event(event);
+            udev_input_event input;
+            input = event;
 
-	    std::cout <<
-            input.time.tv_usec << " " <<
-	        (int)input.type << " " <<
-	        (int)input.code << " " <<
-	        input.value <<
-            std::endl <<
-            std::endl;
-	    write(vmouse, &input, sizeof(input_event));
+            write(mouse, &input, sizeof input);
         }
     }
 }
