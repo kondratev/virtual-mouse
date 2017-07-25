@@ -18,10 +18,10 @@ std::string get_vmouse_path();
 
 // "input_event" as defined by <linux/input_event.h>
 struct input_event {
-    struct timeval time;
-    __u16 type;
-    __u16 code;
-    __s32 value;
+    struct timeval time { 0 };
+    __u16 type { 0 };
+    __u16 code { 0 };
+    __s32 value { 0 };
 };
 
 #include "mouse_event.hpp"
