@@ -67,10 +67,12 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
             }
 
 
-	    std::cout << event.type << std::endl;
-	    std::cout << event.code << std::endl;
-	    std::cout << event.value << std::endl;
-	    std::cout << std::endl;
+	    std::cout <<
+	        (int)event.type << 
+	        (int)event.code <<
+	        event.value <<
+		std::endl <<
+		std::endl;
 	    //}
     }
 }

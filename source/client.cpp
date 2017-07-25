@@ -64,10 +64,12 @@ int main (void) {
 	    
 	    mouse_event event = mouse_event_deserialize(message);
             input_event input = mouse_event_to_input_event(event);
-	    std::cout << input.type << std::endl;
-	    std::cout << input.code << std::endl;
-	    std::cout << input.value << std::endl;
-	    std::cout << std::endl;
+	    std::cout <<
+	        (int)event.type << 
+	        (int)event.code <<
+	        event.value <<
+		std::endl <<
+		std::endl;
 	    write(vmouse, &input, sizeof(input_event));
         }
     }
