@@ -60,8 +60,13 @@ mouse_event input_event_to_mouse_event(const input_event & input) {
     mouse_event mouse;
     // Converts supported mouse event types
     if (input.type == EV_SYN) mouse.type = MOUSE_REFRESH;
-    if (input.type == EV_REL) mouse.type = MOUSE_REL;
-    if (input.type == EV_KEY) mouse.type = MOUSE_BTN;
+    else if (input.type == EV_REL) mouse.type = MOUSE_REL;
+    else if (input.type == EV_KEY) mouse.type = MOUSE_BTN;
+    else {
+        mouse.type = input.type;
+        mouse.code = input.code;
+        mouse.value = input.value;
+    }
     // Converts supported mouse axis
     if (mouse.type == MOUSE_REL) {
         if (input.code == REL_X) mouse.code = MOUSE_REL_X;
@@ -88,8 +93,13 @@ input_event mouse_event_to_input_event(const mouse_event & mouse) {
     input_event input;
     // Converts supported mouse event types
     if (mouse.type == MOUSE_REFRESH) input.type = EV_SYN;
-    if (mouse.type == MOUSE_REL) input.type = EV_REL;
-    if (mouse.type == MOUSE_BTN) input.type = EV_KEY;
+    else if (mouse.type == MOUSE_REL) input.type = EV_REL;
+    else if (mouse.type == MOUSE_BTN) input.type = EV_KEY;
+    else {
+        input.type = mouse.type;
+        input.code = mouse.code;
+        input.value = input.value;
+    }
     // Converts supported mouse axis
     if (input.type == EV_REL) {
         if (mouse.code == MOUSE_REL_X) input.code = REL_X;

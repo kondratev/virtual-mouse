@@ -50,10 +50,11 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         // thread will stall until an event is recieved. This prevents the
         // thread from hogging cpu cycles.
         mouse_event event = read_hmouse(mouse);
+
         // Determines if the event is valid
-        if (event.type == MOUSE_REL ||
-            event.type == MOUSE_BTN ||
-            event.type == MOUSE_REFRESH) {
+        // if (event.type == MOUSE_REL ||
+        //     event.type == MOUSE_BTN ||
+        //     event.type == MOUSE_REFRESH) {
             // Converts the event into a network message
             const char * message = mouse_event_serialize(event);
             // It is possible that new clients are being added. In this case,
@@ -63,7 +64,11 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
                 // Sends the network message
                 sendto(master_socket, message, MOUSE_EVENT_SLEN, 0, &client, sizeof(client));
             }
-        }
+            std::cout << (int)event.type << std::endl;
+            std::cout << (int)event.code << std::endl;
+            std::cout << event.value << std::endl;
+            std::cout << std::endl;
+	//  }
     }
 }
 
