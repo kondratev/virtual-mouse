@@ -6,7 +6,7 @@
 // events, sent across the network, and translated back
 // into OS-specific events.
 
-#define MOUSE_REFRESH 0x0 // refresh
+#define MOUSE_REF 0x0 // refresh
 #define MOUSE_REL 0x1 // axis
 #define MOUSE_BTN 0x2 // button
 

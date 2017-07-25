@@ -1,6 +1,7 @@
 #ifdef __unix__
 #include "mouse.hpp"
 
+#include <stdexcept>
 #include <libudev.h>
 #include <string.h>
 std::string get_vmouse_path() {
@@ -11,7 +12,9 @@ std::string get_vmouse_path() {
     struct udev_list_entry *entry;
 
     // Initializes the udev context
-    udev = udev_new();
+    if (!(udev = udev_new())) {
+        throw std::runtime_error("udev(): null");
+    }
     // Initializes an enumeration object. In this case, we don't want to
     // filter the enumeration object because the filtration needs to occur
     // with both a node and parent node.
@@ -56,51 +59,60 @@ std::string get_vmouse_path() {
 }
 
 #include <linux/input-event-codes.h>
-mouse_event input_event_to_mouse_event(const input_event & input) {
-    mouse_event mouse;
-    // Converts supported mouse event types
-    if (input.type == EV_SYN) mouse.type = MOUSE_REFRESH;
-    else if (input.type == EV_REL) mouse.type = MOUSE_REL;
-    else if (input.type == EV_KEY) mouse.type = MOUSE_BTN;
-    // Converts supported mouse axis
-    if (mouse.type == MOUSE_REL) {
-        if (input.code == REL_X) mouse.code = MOUSE_REL_X;
-        else if (input.code == REL_Y) mouse.code = MOUSE_REL_Y;
-        else if (input.code == REL_WHEEL) mouse.code = MOUSE_REL_VWHEEL;
-        mouse.value = input.value;
-    // Converts supported mosue buttons
-    } else if (mouse.type == MOUSE_BTN) {
-        if (input.code == BTN_LEFT) mouse.code = MOUSE_BTN_L;
-        else if (input.code == BTN_RIGHT) mouse.code = MOUSE_BTN_R;
-        else if (input.code == BTN_MIDDLE) mouse.code = MOUSE_BTN_M;
-        mouse.value = input.value;
-    }
-    // Returns mouse event
-    return mouse;
+mouse_event input_event_to_mouse_event(const input_event & event) {
+    // mouse_event mouse;
+    // // Converts supported mouse event types
+    // if      (input.type == EV_SYN) mouse.type = MOUSE_REF;
+    // else if (input.type == EV_REL) mouse.type = MOUSE_REL;
+    // else if (input.type == EV_KEY) mouse.type = MOUSE_BTN;
+    // // Converts supported mouse axis
+    // if (mouse.type == MOUSE_REL) {
+    //     if      (input.code == REL_X) mouse.code = MOUSE_REL_X;
+    //     else if (input.code == REL_Y) mouse.code = MOUSE_REL_Y;
+    //     else if (input.code == REL_WHEEL) mouse.code = MOUSE_REL_VWHEEL;
+    //     mouse.value = input.value;
+    // // Converts supported mosue buttons
+    // } else if (mouse.type == MOUSE_BTN) {
+    //     if      (input.code == BTN_LEFT)   mouse.code = MOUSE_BTN_L;
+    //     else if (input.code == BTN_RIGHT)  mouse.code = MOUSE_BTN_R;
+    //     else if (input.code == BTN_MIDDLE) mouse.code = MOUSE_BTN_M;
+    //     mouse.value = input.value;
+    // }
+    // // Returns mouse event
+    // return mouse;
+
+    return new_mouse_event(event.type, event.code, event.value);
 }
 
 #include <linux/input-event-codes.h>
 input_event mouse_event_to_input_event(const mouse_event & mouse) {
-    input_event input;
-    // Converts supported mouse event types
-    if (mouse.type == MOUSE_REFRESH) input.type = EV_SYN;
-    else if (mouse.type == MOUSE_REL) input.type = EV_REL;
-    else if (mouse.type == MOUSE_BTN) input.type = EV_KEY;
-    // Converts supported mouse axis
-    if (input.type == EV_REL) {
-        if (mouse.code == MOUSE_REL_X) input.code = REL_X;
-        else if (mouse.code == MOUSE_REL_Y) input.code = REL_Y;
-        else if (mouse.code == MOUSE_REL_VWHEEL) input.code = REL_WHEEL;
-        input.value = mouse.value;
-    // Converts supported mouse buttons
-    } else if (input.type == EV_KEY) {
-        if (mouse.code == MOUSE_BTN_L) input.code = BTN_LEFT;
-        else if (mouse.code == MOUSE_BTN_R) input.code = BTN_RIGHT;
-        else if (mouse.code == MOUSE_BTN_M) input.code = BTN_MIDDLE;
-        input.value = mouse.value;
-    }
-    // Returns input event
-    return input;
+    // input_event input;
+    // // Converts supported mouse event types
+    // if      (mouse.type == MOUSE_REF) input.type = EV_SYN;
+    // else if (mouse.type == MOUSE_REL) input.type = EV_REL;
+    // else if (mouse.type == MOUSE_BTN) input.type = EV_KEY;
+    // // Converts supported mouse axis
+    // if (input.type == EV_REL) {
+    //     if (mouse.code == MOUSE_REL_X) input.code = REL_X;
+    //     else if (mouse.code == MOUSE_REL_Y) input.code = REL_Y;
+    //     else if (mouse.code == MOUSE_REL_VWHEEL) input.code = REL_WHEEL;
+    //     input.value = mouse.value;
+    // // Converts supported mouse buttons
+    // } else if (input.type == EV_KEY) {
+    //     if (mouse.code == MOUSE_BTN_L) input.code = BTN_LEFT;
+    //     else if (mouse.code == MOUSE_BTN_R) input.code = BTN_RIGHT;
+    //     else if (mouse.code == MOUSE_BTN_M) input.code = BTN_MIDDLE;
+    //     input.value = mouse.value;
+    // }
+    // // Returns input event
+    // return input;
+
+    input_event event;
+    event.type = mouse.type;
+    event.code = mouse.code;
+    event.value = mouse.value;
+
+    return event;
 }
 
 #include <unistd.h>

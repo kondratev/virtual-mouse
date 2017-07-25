@@ -33,6 +33,7 @@ void recv_client(int master_socket, std::vector<struct sockaddr> & clients) {
         // Recieves a message from the client
         if (recvfrom(master_socket, &message, 1024, 0, &caddress, &caddress_len) != -1) {
             if (!strcmp(message, "connect")) {
+                std::cout << "HERE" << std::endl;
                 // It is possible that updates are being sent to the clients.
                 // In this case, we will wait until all updates have been sent.
                 std::lock_guard<std::mutex> lock (clients_mu);
@@ -49,9 +50,12 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         // thread from hogging cpu cycles.
         mouse_event event = read_hmouse(mouse);
 
-        // Determines if the event is valid
-        if (event.type == MOUSE_REL ||
-            event.type == MOUSE_BTN) {
+        // // Determines if the event is valid
+        // if (event.type == MOUSE_REL ||
+        //     event.type == MOUSE_BTN ||
+        //     event.type == MOUSE_REF) {
+
+
             // Converts the event into a network message
             const char * message = mouse_event_serialize(event);
             // It is possible that new clients are being added. In this case,
@@ -61,7 +65,9 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
                 // Sends the network message
                 sendto(master_socket, message, MOUSE_EVENT_SLEN, 0, &client, sizeof(client));
             }
-	    }
+
+
+	    //}
     }
 }
 
