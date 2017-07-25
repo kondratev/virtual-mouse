@@ -13,6 +13,12 @@ int32_t get_current_usec() {
 }
 
 #include "event/mouse_event.hpp"
+udev_input_event::udev_input_event(const mouse_event & event) {
+    // Copies the input event
+    *this = event;
+}
+
+#include "event/mouse_event.hpp"
 void udev_input_event::operator=(const mouse_event & event) {
     // Retrieves the current time
     this->time.tv_usec = get_current_usec();
@@ -37,6 +43,14 @@ void udev_input_event::operator=(const mouse_event & event) {
     }
     // Converts the event value
     this->value = event.value;
+}
+
+#include <unistd.h>
+void udev_input_event::write(int mouse) {
+    // The udev_input_event structure should be compatible with input_event
+    // defined in <linux/input_event.h>. This means that can just write the
+    // structure to the udev device.
+    ::write(mouse, this, sizeof * this);
 }
 
 #endif // __unix__

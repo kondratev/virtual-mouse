@@ -55,14 +55,9 @@ int main (void) {
     sendto(master_socket, connect, strlen(connect), 0, (struct sockaddr*)&address4, address4_len);
 
     while (true) {
-        if (family == AF_INET) {
- 
-            mouse_event event = mouse_event::recv(master_socket);
-	    
-            udev_input_event input;
-            input = event;
-
-            write(mouse, &input, sizeof input);
-        }
+        mouse_event event = mouse_event::recv(master_socket);
+        udev_input_event input { event };
+        std::cout << (int)event.type << (int)event.code << event.value << std::endl;
+        input.write(mouse);
     }
 }

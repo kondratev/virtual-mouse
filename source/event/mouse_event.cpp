@@ -93,16 +93,19 @@ mouse_event mouse_event::read(int mouse) {
     return { udev };
 }
 
-
 #include <sys/socket.h>
 #include <stdexcept>
 mouse_event mouse_event::recv(int socket) {
     char buffer [1024] = { 0 };
+    // This expects serialized mouse_events. In this case, we need a temporary
+    // buffer. This buffer is passed to mouse_event::deserialize. This should
+    // intialize the mouse_event.
     if (::recv(socket, buffer, 1024, 0) == -1) {
         throw std::runtime_error("recv(): " + std::to_string(errno));
     }
-
+    // Deserialize the mouse event
     mouse_event event;
     event.deserialize(buffer);
+    // Return the event
     return event;
 }

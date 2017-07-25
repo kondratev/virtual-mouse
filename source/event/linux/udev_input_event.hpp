@@ -15,7 +15,10 @@ struct udev_input_event {
     uint16_t code { 0 };
     int32_t value { 0 };
 
+    udev_input_event() = default;
+    udev_input_event(const mouse_event&);
     void operator=(const mouse_event&);
+    void write(int mouse);
 };
 
 #endif // __unix__

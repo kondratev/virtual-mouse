@@ -47,6 +47,7 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         // thread will stall until an event is recieved. This prevents the
         // thread from hogging cpu cycles.
         mouse_event event = mouse_event::read(mouse);
+        std::cout << (int)event.type << (int)event.code << event.value << std::endl;
         // Determines if the event is valid
         if (event.type == MOUSE_EV_REL ||
             event.type == MOUSE_EV_BTN) {
