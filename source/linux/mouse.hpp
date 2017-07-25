@@ -5,11 +5,7 @@
 #include <iostream>
 #include <string>
 
-#define MOUSE_NAME    "BNP Virtual Mouse"
-#define MOUSE_VENDOR  0x0000
-#define MOUSE_PRODUCT 0x0000
-#define MOUSE_VERSION 0x0001
-#define MOUSE_NODE    "event"
+#include "mouse_definitions.h"
 
 std::string get_vmouse_path();
 

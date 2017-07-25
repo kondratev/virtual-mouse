@@ -23,9 +23,11 @@ int main (void) {
     socklen_t address4_len;
     socklen_t address6_len;
 
+    std::cout << get_vmouse_path() << std::endl;
+
     // Determines if we can open the mouse node. If this fails, we probably
     // don't have permission to open the mouse node.
-    if ((vmouse = open(get_vmouse_path().c_str(), O_RDONLY)) == -1) {
+    if ((vmouse = open(get_vmouse_path().c_str(), O_WRONLY)) == -1) {
         throw std::runtime_error("open(): " + std::to_string(errno));
     }
 
@@ -61,6 +63,9 @@ int main (void) {
             }
             mouse_event event = mouse_event_deserialize(message);
             input_event input = mouse_event_to_input_event(event);
+	    std::cout << (int)event.type << std::endl;
+	    std::cout << (int)event.code << std::endl;
+	    std::cout << event.value << std::endl;
             write(vmouse, &input, sizeof(input_event));
         }
     }

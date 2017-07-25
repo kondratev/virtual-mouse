@@ -1,1 +1,1 @@
-cmd_/home/brandon/Driver/source/vmouse/vmouse.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/brandon/Driver/source/vmouse/vmouse.ko /home/brandon/Driver/source/vmouse/vmouse.o /home/brandon/Driver/source/vmouse/vmouse.mod.o ;  true
+cmd_/home/brandon/virtual-mouse/source/linux/vmouse/vmouse.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/brandon/virtual-mouse/source/linux/vmouse/vmouse.ko /home/brandon/virtual-mouse/source/linux/vmouse/vmouse.o /home/brandon/virtual-mouse/source/linux/vmouse/vmouse.mod.o ;  true

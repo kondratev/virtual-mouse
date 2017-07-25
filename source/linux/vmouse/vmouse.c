@@ -2,7 +2,7 @@
 #include <linux/input.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include "../mouse.h"
+#include "../mouse_definitions.h"
 
 static struct input_dev *vmouse_dev;
 static int vmouse_dev_registered;

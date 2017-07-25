@@ -14,7 +14,7 @@ const char * mouse_event_serialize(const mouse_event & event) {
     // Stores the mouse event buffer
     static char buffer [MOUSE_EVENT_SLEN] = { 0 };
     // Converts value to network order
-    long value = htons(event.value);
+//    long value = htons(event.value);
 
     char * p = &buffer[0];
     // Writes mouse identifier to message
@@ -28,7 +28,7 @@ const char * mouse_event_serialize(const mouse_event & event) {
     // Writes event code to message
     *p++ = event.code;
     // Writes event value to message
-    memcpy(p, &value, sizeof value);
+    memcpy(p, &event.value, sizeof value);
     // Returns the buffer
     return buffer;
 }
@@ -49,6 +49,6 @@ mouse_event mouse_event_deserialize(const char * buffer) {
     event.type = *p++;
     event.code = *p++;
     memcpy(&event.value, p, sizeof event.value);
-    event.value = ntohs(event.value);
+//    event.value = ntohs(event.value);
     return event;   
 }
