@@ -28,7 +28,7 @@ const char * mouse_event_serialize(const mouse_event & event) {
     // Writes event code to message
     *p++ = event.code;
     // Writes event value to message
-    memcpy(p, &event.value, sizeof value);
+    memcpy(p, &event.value, sizeof event.value);
     // Returns the buffer
     return buffer;
 }
