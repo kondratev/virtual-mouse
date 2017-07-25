@@ -31,7 +31,7 @@ mouse_event input_event_to_mouse_event(const input_event & input);
 input_event mouse_event_to_input_event(const mouse_event & input);
 
 
-mouse_event read_hmouse(int fd);
+input_event read_hmouse(int fd);
 
 
 #endif // MOUSE

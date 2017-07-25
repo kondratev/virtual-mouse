@@ -48,7 +48,7 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         // Retrieves a mouse event. This is "blocking;" meaning that this
         // thread will stall until an event is recieved. This prevents the
         // thread from hogging cpu cycles.
-        mouse_event event = read_hmouse(mouse);
+        input_event event = read_hmouse(mouse);
 
         // // Determines if the event is valid
         // if (event.type == MOUSE_REL ||
@@ -56,23 +56,23 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
         //     event.type == MOUSE_REF) {
 
 
-            // Converts the event into a network message
-            const char * message = mouse_event_serialize(event);
+
             // It is possible that new clients are being added. In this case,
             // we will wait until all new clients are added.
             std::lock_guard<std::mutex> lock (clients_mu);
             for (auto & client : clients) {
                 // Sends the network message
-                sendto(master_socket, message, MOUSE_EVENT_SLEN, 0, &client, sizeof(client));
+                sendto(master_socket, &event, sizeof(input_event), 0, &client, sizeof(client));
             }
 
 
 	    std::cout <<
-	        (int)event.type << 
-	        (int)event.code <<
+            event.time.tv_usec << " " <<
+	        (int)event.type << " " <<
+	        (int)event.code << " " <<
 	        event.value <<
-		std::endl <<
-		std::endl;
+            std::endl <<
+            std::endl;
 	    //}
     }
 }

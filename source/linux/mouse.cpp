@@ -116,10 +116,10 @@ input_event mouse_event_to_input_event(const mouse_event & mouse) {
 }
 
 #include <unistd.h>
-mouse_event read_hmouse(int fd) {
+input_event read_hmouse(int fd) {
     input_event input;
     int count = read(fd, &input, sizeof(input_event));
-    return input_event_to_mouse_event(input);
+    return input;
 }
 
 

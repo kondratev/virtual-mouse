@@ -58,18 +58,21 @@ int main (void) {
     char message [MOUSE_EVENT_SLEN];
     while (true) {
         if (family == AF_INET) {
-            if (recv(master_socket, &message, MOUSE_EVENT_SLEN, 0) == -1) {
+            input_event input;
+            if (recv(master_socket, &input, sizeof(input_event), 0) == -1) {
                 throw std::runtime_error("recv(): " + std::to_string(errno));
             }
 	    
-	    mouse_event event = mouse_event_deserialize(message);
-            input_event input = mouse_event_to_input_event(event);
+	    // //mouse_event event = mouse_event_deserialize(message);
+        //     input_event input = mouse_event_to_input_event(event);
+
 	    std::cout <<
-	        (int)event.type << 
-	        (int)event.code <<
-	        event.value <<
-		std::endl <<
-		std::endl;
+            input.time.tv_usec << " " <<
+	        (int)input.type << " " <<
+	        (int)input.code << " " <<
+	        input.value <<
+            std::endl <<
+            std::endl;
 	    write(vmouse, &input, sizeof(input_event));
         }
     }
