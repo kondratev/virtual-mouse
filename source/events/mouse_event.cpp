@@ -38,22 +38,25 @@ void mouse_event::operator=(const udev_input_event & event) {
     this->value = event.value;
 }
 
-
+#include <arpa/inet.h>
 std::vector<uint8_t> mouse_event::serialize() {
     std::vector<uint8_t> buffer = {
         'm', 'o', 'u', 's', 'e'
     };
     { // Writes the type
-    uint8_t* p = (uint8_t*)&this->type;
+    int16_t type = htons(this->type);
+    uint8_t* p = (uint8_t*)&type;
     buffer.push_back(*p++);
     buffer.push_back(*p++);
     }
     { // Writes the code
-    uint8_t* p = (uint8_t*)&this->code;
+    int16_t code = htons(code);
+    uint8_t* p = (uint8_t*)&code;
     buffer.push_back(*p++);
     buffer.push_back(*p++);
     }
     { // Writes the value
+    int32_t value = htonl(this->value);
     uint8_t* p = (uint8_t*)&this->value;
     buffer.push_back(*p++);
     buffer.push_back(*p++);
@@ -64,6 +67,7 @@ std::vector<uint8_t> mouse_event::serialize() {
     return buffer;
 }
 
+#include <arpa/inet.h>
 #include <stdexcept>
 void mouse_event::deserialize(const std::vector<uint8_t> & buffer) {
     const uint8_t* b = &buffer[0];
@@ -78,11 +82,13 @@ void mouse_event::deserialize(const std::vector<uint8_t> & buffer) {
     uint8_t* p = (uint8_t*)&this->type;
     *p++ = *b++;
     *p++ = *b++;
+    this->type = ntohs(this->type);
     }
     { // Reads the code
     uint8_t* p = (uint8_t*)&this->code;
     *p++ = *b++;
     *p++ = *b++;
+    this->code = ntohs(this->code);
     }
     { // Reads the value
     uint8_t* p = (uint8_t*)&this->value;
@@ -90,6 +96,7 @@ void mouse_event::deserialize(const std::vector<uint8_t> & buffer) {
     *p++ = *b++;
     *p++ = *b++;
     *p++ = *b++;
+    this->value = ntohl(this->value);
     }
 }
 

@@ -10,8 +10,8 @@
 #include <thread>
 #include <mutex>
 // Includes
-#include "event/mouse_event.hpp"
-#include "event/linux/udev_input_event.hpp"
+#include "events/mouse_event.hpp"
+#include "events/linux/udev_input_event.hpp"
 
 bool running;
 std::mutex clients_mu;
@@ -41,7 +41,7 @@ void recv_client(int master_socket, std::vector<struct sockaddr> & clients) {
     }
 }
 
-void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & clients) {
+void mouse_send(int master_socket, int mouse, std::vector<struct sockaddr> & clients) {
     while (running) {
         // Retrieves a mouse event. This is "blocking;" meaning that this
         // thread will stall until an event is recieved. This prevents the
@@ -58,6 +58,26 @@ void send_mouse(int master_socket, int mouse, std::vector<struct sockaddr> & cli
             }
         }
     }
+}
+
+#include <SDL2/SDL.h>
+void mouse_lock() {
+    SDL_Init(SDL_INIT_EVERYTHING);
+    SDL_Window * window = SDL_CreateWindow("BNP Virtual Mouse Server", 0, 1080, 1920, 1080, 0);
+    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_ShowCursor(SDL_DISABLE);
+    SDL_SetWindowGrab(window, SDL_TRUE);
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT)
+                running = false;
+        }
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        SDL_RenderPresent(renderer);
+    }
+    SDL_Quit();
 }
 
 int main (void) {
@@ -116,14 +136,14 @@ int main (void) {
     running = true;
     // Starts processing clients and mouse updates
     std::thread t0 { recv_client, master_socket, std::ref(clients) };
-    std::thread t1 { send_mouse, master_socket, mouse, std::ref(clients) };
-    // Prevents the program from terminating
-    std::cin.get();
-    // Stops the program
-    running = false;
-    // Joins the two threads
+    std::thread t1 { mouse_send, master_socket, mouse, std::ref(clients) };
+    std::thread t2 { mouse_lock };
+    // Continues while running
+    while (running) {};
+    // Joins the threads
     t0.join();
     t1.join();
+    t2.join();
 
     return 0;
 }

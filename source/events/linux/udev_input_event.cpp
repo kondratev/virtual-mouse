@@ -12,13 +12,13 @@ int32_t get_current_usec() {
     return time.tv_usec;
 }
 
-#include "event/mouse_event.hpp"
+#include "events/mouse_event.hpp"
 udev_input_event::udev_input_event(const mouse_event & event) {
     // Copies the input event
     *this = event;
 }
 
-#include "event/mouse_event.hpp"
+#include "events/mouse_event.hpp"
 void udev_input_event::operator=(const mouse_event & event) {
     // Retrieves the current time
     this->time.tv_usec = get_current_usec();
