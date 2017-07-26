@@ -12,11 +12,14 @@
 // Includes
 #include "events/mouse_event.hpp"
 #include "events/linux/udev_input_event.hpp"
+#include "network.hpp"
+#include "display/linux/xorg.cpp"
 
 bool running;
+bool show_pointer;
 std::mutex clients_mu;
 
-void recv_client(int master_socket, std::vector<struct sockaddr> & clients) {
+void recv_client(int master_socket, int family, std::vector<struct sockaddr> & clients) {
     // When a client connects to the server, we need the client connection
     // information. This is so the server can send messages back to the client.
     // TCP does not require this extra step, but UDP does.
@@ -36,6 +39,7 @@ void recv_client(int master_socket, std::vector<struct sockaddr> & clients) {
                 // In this case, we will wait until all updates have been sent.
                 std::lock_guard<std::mutex> lock (clients_mu);
                 clients.push_back(caddress);
+                std::cout << "Client Connected: " << sockaddr_get_address(family, caddress, caddress_len) << std::endl;
             }
         }
     }
@@ -60,24 +64,10 @@ void mouse_send(int master_socket, int mouse, std::vector<struct sockaddr> & cli
     }
 }
 
-#include <SDL2/SDL.h>
-void mouse_lock() {
-    SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Window * window = SDL_CreateWindow("BNP Virtual Mouse Server", 0, 1080, 1920, 1080, 0);
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 0);
-    SDL_ShowCursor(SDL_DISABLE);
-    SDL_SetWindowGrab(window, SDL_TRUE);
+void pointer_update(xorg_cursor_control & control) {
     while (running) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT)
-                running = false;
-        }
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
+         (!show_pointer) ? control.grab() : control.ungrab();
     }
-    SDL_Quit();
 }
 
 int main (void) {
@@ -87,6 +77,8 @@ int main (void) {
     const char * mouse_node = "/dev/input/event0";
 
     int mouse;
+    xorg_cursor_control control;
+
     int master_socket;
     struct sockaddr_in address4;
     struct sockaddr_in6 address6;
@@ -134,10 +126,11 @@ int main (void) {
 
     // Starts the program
     running = true;
+    show_pointer = false;
     // Starts processing clients and mouse updates
-    std::thread t0 { recv_client, master_socket, std::ref(clients) };
+    std::thread t0 { recv_client, master_socket, family, std::ref(clients) };
     std::thread t1 { mouse_send, master_socket, mouse, std::ref(clients) };
-    std::thread t2 { mouse_lock };
+    std::thread t2 { pointer_update, std::ref(control) };
     // Continues while running
     while (running) {};
     // Joins the threads

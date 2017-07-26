@@ -1,41 +1,20 @@
 #include "mouse_event.hpp"
 
-
-#include "linux/udev_input_event.hpp"
-mouse_event::mouse_event(const udev_input_event & event) {
-    // Copies the udev input event
-    *this = event;
-}
-
-#include "linux/udev_input_event.hpp"
-void mouse_event::operator=(const udev_input_event & event) {
-    // Determines if this is an "axis" event
-    if (event.type == EV_REL) {
-        // Converts the event code
-        if      (event.code == REL_X) this->code = MOUSE_REL_X;
-        else if (event.code == REL_Y) this->code = MOUSE_REL_Y;
-        else if (event.code == REL_HWHEEL) this->code = MOUSE_REL_HWHEEL;
-        else if (event.code ==  REL_WHEEL) this->code = MOUSE_REL_VWHEEL;
-        // Converts the event type
-        this->type = MOUSE_EV_REL;
-    
-    // Determines if this is a "button" event
-    } else if (event.type == EV_KEY) {
-        // Converts the event code
-        if      (event.code ==   BTN_LEFT) this->code = MOUSE_BTN_L;
-        else if (event.code ==  BTN_RIGHT) this->code = MOUSE_BTN_R;
-        else if (event.code == BTN_MIDDLE) this->code = MOUSE_BTN_M;
-        // Converts the event type
-        this->type = MOUSE_EV_BTN;
-    
-    // Determines if this is a "synchronize" event
-    } else if (event.type == EV_SYN) {
-        // Converts th event type
-        this->type = MOUSE_EV_SYN;
+#include <sys/socket.h>
+#include <stdexcept>
+mouse_event mouse_event::recv(int socket) {
+    std::vector<uint8_t> buffer (1024, 0);
+    // This expects serialized mouse_events. In this case, we need a temporary
+    // buffer. This buffer is passed to mouse_event::deserialize. This should
+    // intialize the mouse_event.
+    if (::recv(socket, &buffer[0], 1024, 0) == -1) {
+        throw std::runtime_error("recv(): " + std::to_string(errno));
     }
-
-    // Converts the event value
-    this->value = event.value;
+    // Deserialize the mouse event
+    mouse_event event;
+    event.deserialize(buffer);
+    // Return the event
+    return event;
 }
 
 #include <arpa/inet.h>
@@ -50,14 +29,14 @@ std::vector<uint8_t> mouse_event::serialize() {
     buffer.push_back(*p++);
     }
     { // Writes the code
-    int16_t code = htons(code);
+    int16_t code = htons(this->code);
     uint8_t* p = (uint8_t*)&code;
     buffer.push_back(*p++);
     buffer.push_back(*p++);
     }
     { // Writes the value
     int32_t value = htonl(this->value);
-    uint8_t* p = (uint8_t*)&this->value;
+    uint8_t* p = (uint8_t*)&value;
     buffer.push_back(*p++);
     buffer.push_back(*p++);
     buffer.push_back(*p++);
@@ -100,6 +79,41 @@ void mouse_event::deserialize(const std::vector<uint8_t> & buffer) {
     }
 }
 
+#ifdef __unix__
+
+#include "linux/udev_input_event.hpp"
+mouse_event::mouse_event(const udev_input_event & event) {
+    // Copies the udev input event
+    *this = event;
+}
+#include "linux/udev_input_event.hpp"
+void mouse_event::operator=(const udev_input_event & event) {
+    // Determines if this is an "axis" event
+    if (event.type == EV_REL) {
+        // Converts the event code
+        if (event.code == REL_X) this->code = MOUSE_REL_X;
+        else if (event.code == REL_Y) this->code = MOUSE_REL_Y;
+        else if (event.code == REL_HWHEEL) this->code = MOUSE_REL_HWHEEL;
+        else if (event.code ==  REL_WHEEL) this->code = MOUSE_REL_VWHEEL;
+        // Converts the event type
+        this->type = MOUSE_EV_REL;
+    // Determines if this is a "button" event
+    } else if (event.type == EV_KEY) {
+        // Converts the event code
+        if (event.code ==   BTN_LEFT) this->code = MOUSE_BTN_L;
+        else if (event.code ==  BTN_RIGHT) this->code = MOUSE_BTN_R;
+        else if (event.code == BTN_MIDDLE) this->code = MOUSE_BTN_M;
+        // Converts the event type
+        this->type = MOUSE_EV_BTN;
+    // Determines if this is a "synchronize" event
+    } else if (event.type == EV_SYN) {
+        // Converts th event type
+        this->type = MOUSE_EV_SYN;
+    }
+    // Converts the event value
+    this->value = event.value;
+}
+
 #include <unistd.h>
 #include <stdexcept>
 #include "linux/udev_input_event.hpp"
@@ -115,19 +129,4 @@ mouse_event mouse_event::read(int mouse) {
     return { udev };
 }
 
-#include <sys/socket.h>
-#include <stdexcept>
-mouse_event mouse_event::recv(int socket) {
-    std::vector<uint8_t> buffer (1024, 0);
-    // This expects serialized mouse_events. In this case, we need a temporary
-    // buffer. This buffer is passed to mouse_event::deserialize. This should
-    // intialize the mouse_event.
-    if (::recv(socket, &buffer[0], 1024, 0) == -1) {
-        throw std::runtime_error("recv(): " + std::to_string(errno));
-    }
-    // Deserialize the mouse event
-    mouse_event event;
-    event.deserialize(buffer);
-    // Return the event
-    return event;
-}
+#endif
